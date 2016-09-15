@@ -13,10 +13,12 @@
 	 var playlist = ["sample1.mp3", "sample2.mp3"]
 	 
 	 var aud = document.getElementById("control");
+	 // TODO: Add skip controls
 	 aud.src = playlist[0];
 	 aud.play();
 	 aud.onended = function() {
 	     playlist.shift();
+	     // TODO: Keep copy for replaying?
 	     aud.src = playlist[0];
 	     aud.load();
 	     aud.play();
