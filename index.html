@@ -3,23 +3,24 @@
     </header>
     <body>
 	<audio id="control" controls>
-	    <source src="sample1.mp3" type="audio/mpeg">
+	    <source src="" type="audio/mpeg">
 	    Your browser does not support the audio element.
 	</audio>
 
 	
 	<script>
-	 var aud = document.getElementById("control");
-	 aud.onended = function() {
-	     //alert("The audio has ended");
-	     nextSong()
-	 };
+	 // Pass array of songs loaded by Go
+	 var playlist = ["sample1.mp3", "sample2.mp3"]
 	 
-	 function nextSong() { 
-	     aud.src = "sample2.mp3";
+	 var aud = document.getElementById("control");
+	 aud.src = playlist[0];
+	 aud.play();
+	 aud.onended = function() {
+	     playlist.shift();
+	     aud.src = playlist[0];
 	     aud.load();
 	     aud.play();
-	 } 
+	 };
 	</script>
     </body>
 </html>
