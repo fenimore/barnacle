@@ -1,6 +1,6 @@
 <html>
-    <header>
-    </header>
+    <head>
+    </head>
     <body>
 	<audio id="control" controls>
 	    <source src="" type="audio/mpeg">
@@ -10,8 +10,8 @@
 	
 	<script>
 	 // Pass array of songs loaded by Go
-	 var playlist = ["media/sample1.mp3", "media/sample2.mp3"]
-	 
+	 //var playlist = ["media/sample1.mp3", "media/sample2.mp3"]
+	 var playlist {{ .Playlist }} 
 	 var aud = document.getElementById("control");
 	 // TODO: Add skip controls
 	 aud.src = playlist[0];
