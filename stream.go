@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
-	"path/filepath"
 )
 
 func main() {
@@ -13,14 +14,17 @@ func main() {
 	} else {
 		dir = "media/" // current directory
 	}
-	fmt.Printf("Path: %s\n", dir)
-	err := filepath.Walk(dir, scanAlbums)
+
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		fmt.Println(err)
 	}
-}
+	for _, f := range files {
+		fmt.Println(f.Name())
+	}
 
-func scanAlbums(path string, f os.FileInfo, err error) error {
-	fmt.Printf("Scanned: %s\n", path)
-	return nil
+	fs := http.FileServer(http.Dir(dir))
+	http.Handle("/media", http.StripPrefix("/media", fs))
+
+	http.ListenAndServe(":5177", nil)
 }
