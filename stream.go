@@ -31,10 +31,11 @@ func main() {
 	}
 
 	p := new(Playlist)
-	p.Songs = make([]string, len(files))
+	p.Songs = make([]string, 0)
 	for _, f := range files {
-		// fmt.Println(f.Name())
-		p.Songs = append(p.Songs, f.Name())
+		if f.Name() != "" {
+			p.Songs = append(p.Songs, f.Name())
+		}
 	}
 
 	fs := http.FileServer(http.Dir(dir))
