@@ -1,0 +1,25 @@
+<html>
+    <header>
+    </header>
+    <body>
+	<audio id="control" controls>
+	    <source src="sample1.mp3" type="audio/mpeg">
+	    Your browser does not support the audio element.
+	</audio>
+
+	
+	<script>
+	 var aud = document.getElementById("control");
+	 aud.onended = function() {
+	     //alert("The audio has ended");
+	     nextSong()
+	 };
+	 
+	 function nextSong() { 
+	     aud.src = "sample2.mp3";
+	     aud.load();
+	     aud.play();
+	 } 
+	</script>
+    </body>
+</html>
