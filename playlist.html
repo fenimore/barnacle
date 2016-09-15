@@ -6,15 +6,15 @@
 	    <source src="" type="audio/mpeg">
 	    Your browser does not support the audio element.
 	</audio>
-	{{ range .Songs }}
-	{{ . }}
-	{{ end }}
 	
 	<script>
 	 // Pass array of songs loaded by Go
-	 var playlist = ["media/sample1.mp3", "media/sample2.mp3"]
-	 //var playlist = ["what", "what"];
-
+	 //var playlist = ["media/sample1.mp3", "media/sample2.mp3"]
+	 var playlist = [];
+	 {{ range .Songs }}
+	 playlist.push("media/" + {{ . }});
+	 console.log({{ . }});
+	 {{ end }}
 	 //console.log(playlist);
 	 var aud = document.getElementById("control");
 	 // TODO: Add skip controls

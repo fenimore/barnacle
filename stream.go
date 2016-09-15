@@ -39,7 +39,7 @@ func main() {
 	}
 
 	fs := http.FileServer(http.Dir(dir))
-	http.Handle("/media", http.StripPrefix("/media", fs))
+	http.Handle("/media/", http.StripPrefix("/media/", fs))
 	http.HandleFunc("/", p.playlistHandler)
 	http.ListenAndServe(":5177", nil)
 }
