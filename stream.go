@@ -14,6 +14,8 @@ import (
 	"strings"
 )
 
+//go:generate go-bindata -o assets.go templates/
+
 // Collection struct houses all the Albums.
 type Collection struct {
 	// TODO: make a map?
@@ -68,9 +70,9 @@ func (c *Collection) listenHandler(w http.ResponseWriter,
 func main() {
 	var dir string // to serve
 	if len(os.Args) > 1 {
-		dir = os.Args[1] // absolute path to media/
+		dir = os.Args[1] // absolute path to Music/
 	} else {
-		dir = "media/" // current directory
+		dir = "Music/" // current directory
 	}
 
 	c := new(Collection)
@@ -102,21 +104,21 @@ func main() {
 			isCover := strings.HasSuffix(s.Name(), ".jpg") || strings.HasSuffix(s.Name(), ".png") || strings.HasSuffix(s.Name(), ".jpeg")
 			if !s.IsDir() && !isCover {
 				a.Songs = append(a.Songs, s.Name())
-				path := filepath.Join("/media", a.Title,
+				path := filepath.Join("/Music", a.Title,
 					s.Name())
 				a.Paths = append(a.Paths, path)
 			} else if isCover {
-				a.Cover = filepath.Join("/media/", a.Title, s.Name())
+				a.Cover = filepath.Join("/Music/", a.Title, s.Name())
 			}
 		}
 	}
 
 	// Templates from assets
-	indexHtml, err := Asset("data/index.html")
+	indexHtml, err := Asset("templates/index.html")
 	if err != nil {
 		fmt.Println(err)
 	}
-	playlistHtml, err := Asset("data/playlist.html")
+	playlistHtml, err := Asset("templates/playlist.html")
 	if err != nil {
 		fmt.Println(err)
 	}
