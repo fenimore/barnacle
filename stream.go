@@ -14,6 +14,7 @@ type Playlist struct {
 }
 
 type Collection struct {
+	// TODO: make a map?
 	Albums []*Album
 }
 
@@ -41,6 +42,24 @@ func (c *Collection) indexHandler(w http.ResponseWriter,
 		albumList += "\n" + a.Title
 	}
 	fmt.Fprintf(w, "Albums:\n %s", albumList)
+}
+
+func (c *Collection) listenHandler(w http.ResponseWriter,
+	r *http.Request) {
+	album := r.URL.Path[1:]
+	fmt.Println(album)
+	http.NotFound(w, r)
+	return
+	for _, a := range c.Albums {
+		if a.Title == album {
+			// serve album
+			fmt.Println("found it")
+			t, _ := template.ParseFiles("playlist.html")
+			t.Execute(w, album)
+		}
+	}
+	http.NotFound(w, r)
+
 }
 
 func main() {
@@ -91,15 +110,15 @@ func main() {
 				path := filepath.Join("media", a.Title,
 					s.Name())
 				a.Paths = append(a.Paths, path)
-
 			}
 		}
 	}
-	fmt.Println(c.Albums[0].Paths)
+	//fmt.Println(c.Albums[0].Paths)
 	fs := http.FileServer(http.Dir(dir))
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
-	http.HandleFunc("/play", p.playlistHandler)
-	//http.handleFunc("/listen", listenHandler)
 	http.HandleFunc("/", c.indexHandler)
+	//http.HandleFunc("/play", p.playlistHandler)
+	http.HandleFunc("/listen", c.listenHandler)
+
 	http.ListenAndServe(":5177", nil)
 }

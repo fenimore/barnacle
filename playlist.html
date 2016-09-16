@@ -2,6 +2,9 @@
     <head>
     </head>
     <body>
+	{{ range .Songs }}
+	{{.}}
+	{{ end }}
 	<audio id="control" controls>
 	    <source src="" type="audio/mpeg">
 	    Your browser does not support the audio element.
@@ -11,7 +14,7 @@
 	 // Pass array of songs loaded by Go
 	 //var playlist = ["media/sample1.mp3", "media/sample2.mp3"]
 	 var playlist = [];
-	 {{ range .Songs }}
+	 {{ range .Paths }}
 	 playlist.push({{ . }});
 	 console.log({{ . }});
 	 {{ end }}
