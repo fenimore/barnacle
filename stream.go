@@ -114,7 +114,7 @@ func main() {
 			// Not your filesystem
 			if !s.IsDir() && !isCover {
 				if strings.HasPrefix(s.Name(),
-					"._") || strings.HasSuffix(s.Name(),
+					".") || strings.HasSuffix(s.Name(),
 					".aiff") {
 					continue
 				}
