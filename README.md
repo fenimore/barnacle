@@ -15,4 +15,4 @@ Run the stream binary in the parent directory to a `Music/` directory. barnacle 
 I'm using go-bindata to pack the assets (templates) into the binary. Use `go generate` to call `go-bindata -o assets.go templates/` and refresh the html front end. Then `go run` `stream.go` AND `assets.go`.
 
 
-![screenshot](https://github.com/polypmer/polypmer.github.io/img/barnacle.png "Screeshot")
+![screenshot](http://polypmer.github.io/img/barnacle.png "Screeshot")
