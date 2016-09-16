@@ -40,7 +40,7 @@ func NewAlbum(title string) *Album {
 func (c *Collection) indexHandler(w http.ResponseWriter,
 	r *http.Request) {
 	t := template.New("index")
-	t, err := t.Parse(c.Index) //template.ParseFiles("index.html")
+	t, err := t.Parse(c.Index)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -54,7 +54,7 @@ func (c *Collection) listenHandler(w http.ResponseWriter,
 	for _, a := range c.Albums {
 		if a.Title == album {
 			t := template.New("playlist")
-			t, err := t.Parse(c.Playlist) //ParseFiles("playlist.html")
+			t, err := t.Parse(c.Playlist)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -127,6 +127,6 @@ func main() {
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
 	http.HandleFunc("/", c.indexHandler)
 	http.HandleFunc("/listen/", c.listenHandler)
-
+	fmt.Println("Listening on port 5177")
 	http.ListenAndServe(":5177", nil)
 }

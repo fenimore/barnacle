@@ -58,9 +58,9 @@
 	 // Make list display current song
 	 aud.onended = function() {
 	     position++;
-	     playlist.shift();
+	     //playlist.shift();
 	     // TODO: Keep copy for replaying?
-	     aud.src = playlist[0];
+	     aud.src = playlist[position];
 	     aud.load();
 	     aud.play();
 	     setActive(position);
