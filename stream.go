@@ -46,19 +46,26 @@ func (c *Collection) indexHandler(w http.ResponseWriter,
 
 func (c *Collection) listenHandler(w http.ResponseWriter,
 	r *http.Request) {
-	album := r.URL.Path[1:]
+	album := r.URL.Path[8:]
 	fmt.Println(album)
+	found := false
 
 	for _, a := range c.Albums {
 		if a.Title == album {
 			// serve album
 			fmt.Println("found it")
-			t, _ := template.ParseFiles("playlist.html")
-			t.Execute(w, album)
+			t, err := template.ParseFiles("playlist.html")
+			if err != nil {
+				fmt.Println(err)
+			}
+			t.Execute(w, a)
+			//fmt.Fprint(w, a.Songs)
+			found = true
 		}
 	}
-	http.NotFound(w, r)
-
+	if !found {
+		http.NotFound(w, r)
+	}
 }
 
 func main() {
@@ -106,7 +113,7 @@ func main() {
 		for _, s := range songs {
 			if !s.IsDir() {
 				a.Songs = append(a.Songs, s.Name())
-				path := filepath.Join("media", a.Title,
+				path := filepath.Join("/media", a.Title,
 					s.Name())
 				a.Paths = append(a.Paths, path)
 			}
@@ -117,7 +124,7 @@ func main() {
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
 	http.HandleFunc("/", c.indexHandler)
 	//http.HandleFunc("/play", p.playlistHandler)
-	http.HandleFunc("/listen", c.listenHandler)
+	http.HandleFunc("/listen/", c.listenHandler)
 
 	http.ListenAndServe(":5177", nil)
 }
