@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 )
 
 // Collection struct houses all the Albums.
@@ -26,6 +27,7 @@ type Album struct {
 	Title string
 	Songs []string
 	Paths []string
+	Cover string
 }
 
 // NewAlbum returns a new album with the title.
@@ -93,14 +95,18 @@ func main() {
 			fmt.Println(err)
 		}
 		for _, s := range songs {
-			if !s.IsDir() {
+			isCover := strings.HasSuffix(s.Name(), ".jpg") || strings.HasSuffix(s.Name(), ".png") || strings.HasSuffix(s.Name(), ".jpeg")
+			if !s.IsDir() && !isCover {
 				a.Songs = append(a.Songs, s.Name())
 				path := filepath.Join("/media", a.Title,
 					s.Name())
 				a.Paths = append(a.Paths, path)
+			} else if isCover {
+				a.Cover = filepath.Join("/media/", a.Title, s.Name())
 			}
 		}
 	}
+	fmt.Println(c.Albums[0].Cover)
 	fs := http.FileServer(http.Dir(dir))
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
 	http.HandleFunc("/", c.indexHandler)

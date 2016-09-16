@@ -1,19 +1,39 @@
 <html>
     <head>
+	<!-- Required meta tags always come first -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	
+	<title>{{ .Title }}</title>
+
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" rel="stylesheet">	
     </head>
     <body>
-	<h1>{{ .Title }}</h1>
-	<button type="button" onclick="reload()">Reload</button>
-	<br><br>
-	<audio id="control" controls>
-	    <source src="" type="audio/mpeg">
-	    Your browser does not support the audio element.
-	</audio>
-	<ul>
-	{{ range .Songs }}
-	    <li>{{.}}</li>
-        {{ end }}
-	</ul>
+	<div class="container">
+	    <h1 style="margin-top:5%">{{ .Title }}</h1>
+	    <a class="btn btn-primary" href="/">Return to Collection</a>
+	    <hr>
+	    <div class="row" >
+		<div class="col-md-5">
+		    <button class="btn btn-default" type="button" onclick="reload()">Reload</button>
+		    <audio id="control" controls>
+			<source src="" type="audio/mpeg">
+			Your browser does not support the audio element.
+		    </audio>
+		    <hr>
+		    <ul>
+			{{ range .Songs }}
+			<li>{{.}}</li>
+			{{ end }}
+		    </ul>		    
+		</div>
+		<div class="col-md-5">
+		    <img src={{ .Cover }} class="img-rounded m-x-auto d-block" alt="cover art">		    
+		</div>
+	    </div>
+	</container>
+	
 	<script>
 	 // Pass array of songs loaded by Go
 	 //var playlist = ["media/sample1.mp3", "media/sample2.mp3"]
@@ -38,5 +58,14 @@
 	   location.reload();  
 	 }
 	</script>
+	<!-- Bootstrap core JavaScript
+	     ================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script
+	    src="https://code.jquery.com/jquery-2.2.4.min.js"
+	    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+	    crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>	
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"></script>
     </body>
 </html>
