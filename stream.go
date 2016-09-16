@@ -1,3 +1,6 @@
+// Barnacle streams albums on a local network using html5.
+// Run Barnacle in a directory with a media/ directory, inside
+// of which should be one or more directories of music albums/playlists.
 package main
 
 import (
@@ -9,85 +12,57 @@ import (
 	"path/filepath"
 )
 
-type Playlist struct {
-	Songs []string
-}
-
+// Collection struct houses all the Albums.
 type Collection struct {
 	// TODO: make a map?
 	Albums []*Album
 }
 
+// Album struct keeps track of album title, songs
+// and song paths.
 type Album struct {
 	Title string
 	Songs []string
 	Paths []string
 }
 
+// NewAlbum returns a new album with the title.
 func NewAlbum(title string) *Album {
 	return &Album{Title: title}
 }
 
-func (p *Playlist) playlistHandler(w http.ResponseWriter,
-	r *http.Request) {
-	t, _ := template.ParseFiles("playlist.html")
-	t.Execute(w, p)
-}
-
 func (c *Collection) indexHandler(w http.ResponseWriter,
 	r *http.Request) {
-	// load list of albums
-	var albumList string
-	for _, a := range c.Albums {
-		albumList += "\n" + a.Title
+	t, err := template.ParseFiles("index.html")
+	if err != nil {
+		fmt.Println(err)
 	}
-	fmt.Fprintf(w, "Albums:\n %s", albumList)
+	t.Execute(w, c)
 }
 
 func (c *Collection) listenHandler(w http.ResponseWriter,
 	r *http.Request) {
 	album := r.URL.Path[8:]
-	fmt.Println(album)
-	found := false
 
 	for _, a := range c.Albums {
 		if a.Title == album {
-			// serve album
-			fmt.Println("found it")
 			t, err := template.ParseFiles("playlist.html")
 			if err != nil {
 				fmt.Println(err)
 			}
 			t.Execute(w, a)
-			//fmt.Fprint(w, a.Songs)
-			found = true
+			return
 		}
 	}
-	if !found {
-		http.NotFound(w, r)
-	}
+	http.NotFound(w, r)
 }
 
 func main() {
 	var dir string // to serve
 	if len(os.Args) > 1 {
-		dir = os.Args[1]
+		dir = os.Args[1] // absolute path to media/
 	} else {
 		dir = "media/" // current directory
-	}
-
-	// Get files in /media directory
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	p := new(Playlist)
-	p.Songs = make([]string, 0)
-	for _, f := range files {
-		if f.Name() != "" {
-			p.Songs = append(p.Songs, f.Name())
-		}
 	}
 
 	c := new(Collection)
@@ -119,11 +94,9 @@ func main() {
 			}
 		}
 	}
-	//fmt.Println(c.Albums[0].Paths)
 	fs := http.FileServer(http.Dir(dir))
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
 	http.HandleFunc("/", c.indexHandler)
-	//http.HandleFunc("/play", p.playlistHandler)
 	http.HandleFunc("/listen/", c.listenHandler)
 
 	http.ListenAndServe(":5177", nil)
