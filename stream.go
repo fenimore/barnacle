@@ -1,5 +1,5 @@
 // Barnacle streams albums on a local network using html5.
-// Run Barnacle in a directory with a media/ directory, inside
+// Run Barnacle in a directory with a Music/ directory, inside
 // of which should be one or more directories of music albums/playlists.
 package main
 
@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"os/user"
@@ -21,6 +22,7 @@ type Collection struct {
 	// TODO: make a map?
 	Albums   []*Album
 	Owner    string
+	Host     string
 	Index    string
 	Playlist string
 }
@@ -80,6 +82,11 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	h, err := os.Hostname()
+	if err != nil {
+		fmt.Println(err)
+	}
+	c.Host = h
 	c.Owner = u.Username
 	c.Albums = make([]*Album, 0)
 
@@ -102,13 +109,20 @@ func main() {
 		}
 		for _, s := range songs {
 			isCover := strings.HasSuffix(s.Name(), ".jpg") || strings.HasSuffix(s.Name(), ".png") || strings.HasSuffix(s.Name(), ".jpeg")
+			// The Paths are for the http handlers
+			// Not your filesystem
 			if !s.IsDir() && !isCover {
+				if strings.HasPrefix(s.Name(),
+					"._") || strings.HasSuffix(s.Name(),
+					".aiff") {
+					continue
+				}
 				a.Songs = append(a.Songs, s.Name())
-				path := filepath.Join("/Music", a.Title,
+				path := filepath.Join("/media", a.Title,
 					s.Name())
 				a.Paths = append(a.Paths, path)
 			} else if isCover {
-				a.Cover = filepath.Join("/Music/", a.Title, s.Name())
+				a.Cover = filepath.Join("/media/", a.Title, s.Name())
 			}
 		}
 	}
@@ -129,9 +143,21 @@ func main() {
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
 	http.HandleFunc("/", c.indexHandler)
 	http.HandleFunc("/listen/", c.listenHandler)
-	fmt.Println("Listening on port 5177")
+	fmt.Println("Host:    ", c.Host)
+	fmt.Println("Ip Addr: ", getAddress())
+	fmt.Println("Port:    ", ":5177")
 	err = http.ListenAndServe(":5177", nil)
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func getAddress() string {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		fmt.Println(err)
+	}
+	addresses, _ := ifaces[2].Addrs()
+	address := addresses[0].String() // Trim the /24?
+	return address
 }
