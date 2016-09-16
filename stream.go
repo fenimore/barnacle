@@ -106,7 +106,7 @@ func main() {
 			}
 		}
 	}
-	fmt.Println(c.Albums[0].Cover)
+
 	fs := http.FileServer(http.Dir(dir))
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
 	http.HandleFunc("/", c.indexHandler)

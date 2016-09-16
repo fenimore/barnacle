@@ -22,9 +22,9 @@
 			Your browser does not support the audio element.
 		    </audio>
 		    <hr>
-		    <ul>
-			{{ range .Songs }}
-			<li>{{.}}</li>
+		    <ul class="list-group" id="songlist">
+			{{ range $i, $s := .Songs }}
+			<li id={{$i}} class="list-group-item">{{ $s }}</li>
 			{{ end }}
 		    </ul>		    
 		</div>
@@ -33,30 +33,42 @@
 		</div>
 	    </div>
 	</container>
-	
+
 	<script>
 	 // Pass array of songs loaded by Go
 	 //var playlist = ["media/sample1.mp3", "media/sample2.mp3"]
 	 var playlist = [];
+	 var position = 0;
+	 var songlist = document.getElementsByClassName("list-group-item");
+	 var aud = document.getElementById("control");
 	 {{ range .Paths }}
 	 playlist.push({{ . }});
-	 console.log({{ . }});
 	 {{ end }}
-	 //console.log(playlist);
-	 var aud = document.getElementById("control");
+	 
+	 function setActive(idx) {
+	     for (var i = 0; i < songlist.length; i++) {
+		 songlist[i].classList.remove('active');
+	     }
+	     document.getElementById(idx).classList.add('active');
+	 }
 	 // TODO: Add skip controls
 	 aud.src = playlist[0];
 	 aud.play();
+	 setActive(position);
+	 // Make list display current song
 	 aud.onended = function() {
+	     position++;
 	     playlist.shift();
 	     // TODO: Keep copy for replaying?
 	     aud.src = playlist[0];
 	     aud.load();
 	     aud.play();
+	     setActive(position);
 	 };
 	 function reload() {
 	   location.reload();  
 	 }
+
 	</script>
 	<!-- Bootstrap core JavaScript
 	     ================================================== -->
@@ -64,7 +76,7 @@
 	<script
 	    src="https://code.jquery.com/jquery-2.2.4.min.js"
 	    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
-	    crossorigin="anonymous"></script>
+	    crossorigin="anonymous"></script>	
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>	
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"></script>
     </body>
