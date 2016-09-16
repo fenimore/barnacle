@@ -17,8 +17,10 @@ import (
 // Collection struct houses all the Albums.
 type Collection struct {
 	// TODO: make a map?
-	Albums []*Album
-	Owner  string
+	Albums   []*Album
+	Owner    string
+	Index    string
+	Playlist string
 }
 
 // Album struct keeps track of album title, songs
@@ -37,7 +39,8 @@ func NewAlbum(title string) *Album {
 
 func (c *Collection) indexHandler(w http.ResponseWriter,
 	r *http.Request) {
-	t, err := template.ParseFiles("index.html")
+	t := template.New("index")
+	t, err := t.Parse(c.Index) //template.ParseFiles("index.html")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -50,7 +53,8 @@ func (c *Collection) listenHandler(w http.ResponseWriter,
 
 	for _, a := range c.Albums {
 		if a.Title == album {
-			t, err := template.ParseFiles("playlist.html")
+			t := template.New("playlist")
+			t, err := t.Parse(c.Playlist) //ParseFiles("playlist.html")
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -106,6 +110,18 @@ func main() {
 			}
 		}
 	}
+
+	// Templates from assets
+	indexHtml, err := Asset("data/index.html")
+	if err != nil {
+		fmt.Println(err)
+	}
+	playlistHtml, err := Asset("data/playlist.html")
+	if err != nil {
+		fmt.Println(err)
+	}
+	c.Index = string(indexHtml)
+	c.Playlist = string(playlistHtml)
 
 	fs := http.FileServer(http.Dir(dir))
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
