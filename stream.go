@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 type Playlist struct {
@@ -76,6 +77,19 @@ func main() {
 			album := NewAlbum(d.Name())
 			c.Albums = append(c.Albums, album)
 			//albums = append(albums, d.Name())
+		}
+	}
+
+	for _, a := range c.Albums {
+		songs, err := ioutil.ReadDir(filepath.Join(dir, a.Title))
+		if err != nil {
+			fmt.Println(err)
+		}
+		for _, s := range songs {
+			if !s.IsDir() {
+				a.Songs = append(a.Songs, s.Name())
+
+			}
 		}
 	}
 
