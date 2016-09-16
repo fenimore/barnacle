@@ -12,7 +12,7 @@
 	 //var playlist = ["media/sample1.mp3", "media/sample2.mp3"]
 	 var playlist = [];
 	 {{ range .Songs }}
-	 playlist.push("media/" + {{ . }});
+	 playlist.push({{ . }});
 	 console.log({{ . }});
 	 {{ end }}
 	 //console.log(playlist);

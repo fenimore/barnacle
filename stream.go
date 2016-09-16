@@ -20,6 +20,7 @@ type Collection struct {
 type Album struct {
 	Title string
 	Songs []string
+	Paths []string
 }
 
 func NewAlbum(title string) *Album {
@@ -66,20 +67,19 @@ func main() {
 
 	c := new(Collection)
 	c.Albums = make([]*Album, 0)
-	// Get albums as directories in /media/
+
 	dirs, err := ioutil.ReadDir(dir)
 	if err != nil {
 		fmt.Println(err)
 	}
-
+	// Get Albums in Collection
 	for _, d := range dirs {
 		if d.IsDir() {
 			album := NewAlbum(d.Name())
 			c.Albums = append(c.Albums, album)
-			//albums = append(albums, d.Name())
 		}
 	}
-
+	// Get Songs in Albums
 	for _, a := range c.Albums {
 		songs, err := ioutil.ReadDir(filepath.Join(dir, a.Title))
 		if err != nil {
@@ -88,11 +88,14 @@ func main() {
 		for _, s := range songs {
 			if !s.IsDir() {
 				a.Songs = append(a.Songs, s.Name())
+				path := filepath.Join("media", a.Title,
+					s.Name())
+				a.Paths = append(a.Paths, path)
 
 			}
 		}
 	}
-
+	fmt.Println(c.Albums[0].Paths)
 	fs := http.FileServer(http.Dir(dir))
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
 	http.HandleFunc("/play", p.playlistHandler)
