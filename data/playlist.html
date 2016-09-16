@@ -24,7 +24,8 @@
 		    <hr>
 		    <ul class="list-group" id="songlist">
 			{{ range $i, $s := .Songs }}
-			<li id={{$i}} class="list-group-item">{{ $s }}</li>
+			<a href="#" id={{$i}} class="list-group-item"
+			   onclick="seek({{ $i }})">{{ $s }}</a>
 			{{ end }}
 		    </ul>		    
 		</div>
@@ -67,6 +68,13 @@
 	 };
 	 function reload() {
 	   location.reload();  
+	 }
+	 function seek(id) {
+	     position = id;
+	     aud.src = playlist[position];
+	     aud.load();
+	     aud.play();
+	     setActive(position);
 	 }
 
 	</script>

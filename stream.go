@@ -128,5 +128,8 @@ func main() {
 	http.HandleFunc("/", c.indexHandler)
 	http.HandleFunc("/listen/", c.listenHandler)
 	fmt.Println("Listening on port 5177")
-	http.ListenAndServe(":5177", nil)
+	err = http.ListenAndServe(":5177", nil)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
