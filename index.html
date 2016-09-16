@@ -2,8 +2,11 @@
     <head>
     </head>
     <body>
+	<h1>{{ .Owner }}'s Collection</h1>
+	<ul>
 	{{ range .Albums }}
-	<br>{{ .Title }}
+	    <li><br><a href=/listen/{{.Title}}>{{ .Title }}</a></li>
 	{{ end }}
+	</ul>
     </body>
 </html>

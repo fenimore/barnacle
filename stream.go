@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/user"
 	"path/filepath"
 )
 
@@ -16,6 +17,7 @@ import (
 type Collection struct {
 	// TODO: make a map?
 	Albums []*Album
+	Owner  string
 }
 
 // Album struct keeps track of album title, songs
@@ -66,6 +68,11 @@ func main() {
 	}
 
 	c := new(Collection)
+	u, err := user.Current()
+	if err != nil {
+		fmt.Println(err)
+	}
+	c.Owner = u.Username
 	c.Albums = make([]*Album, 0)
 
 	dirs, err := ioutil.ReadDir(dir)
