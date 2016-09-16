@@ -48,8 +48,7 @@ func (c *Collection) listenHandler(w http.ResponseWriter,
 	r *http.Request) {
 	album := r.URL.Path[1:]
 	fmt.Println(album)
-	http.NotFound(w, r)
-	return
+
 	for _, a := range c.Albums {
 		if a.Title == album {
 			// serve album
