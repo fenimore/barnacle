@@ -34,6 +34,7 @@ type Album struct {
 	Songs []string
 	Paths []string
 	Cover string
+	Count int
 }
 
 // NewAlbum returns a new album with the title.
@@ -122,9 +123,11 @@ func main() {
 					s.Name())
 				a.Paths = append(a.Paths, path)
 			} else if isCover {
-				a.Cover = filepath.Join("/media/", a.Title, s.Name())
+				a.Cover = filepath.Join("/media/",
+					a.Title, s.Name())
 			}
 		}
+		a.Count = len(a.Songs)
 	}
 
 	// Templates from assets

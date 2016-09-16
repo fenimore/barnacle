@@ -14,7 +14,11 @@
 	    <h1 style="margin-top:5%">{{ .Owner }}'s Collection</h1>
 	    <ul class="list-group">
 		{{ range .Albums }}
-		<a class="list-group-item" href=/listen/{{.Title}}>{{ .Title }}</a>
+		<a class="list-group-item" href=/listen/{{.Title}}>
+		    <span class="tag tag-default tag-pill pull-xs-right">
+			{{ .Count }}
+		    </span>
+		    {{ .Title }}</a>
 		{{ end }}
 	    </ul>
 	    <a href="https://github.com/polypmer/barnacle">Source Code</a>
