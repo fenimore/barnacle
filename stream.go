@@ -17,6 +17,10 @@ import (
 
 //go:generate go-bindata -o assets.go templates/
 
+/*
+   Structs and Constructors
+*/
+
 // Collection struct houses all the Albums.
 type Collection struct {
 	// TODO: make a map?
@@ -70,6 +74,10 @@ func (c *Collection) listenHandler(w http.ResponseWriter,
 	http.NotFound(w, r)
 }
 
+/*
+   Main Thread
+*/
+
 func main() {
 	var dir string // to serve
 	if len(os.Args) > 1 {
@@ -77,8 +85,49 @@ func main() {
 	} else {
 		dir = "Music/" // current directory
 	}
+	c := InitCollection(dir)
+	// Templates from assets
+	c.SetUpHtml()
+	// Serve Media
+	fs := http.FileServer(http.Dir(dir))
+	// Handle Routes
+	http.Handle("/media/", http.StripPrefix("/media/", fs))
+	http.HandleFunc("/", c.indexHandler)
+	http.HandleFunc("/listen/", c.listenHandler)
+	// Print Connection Information
+	fmt.Println("Host:    ", c.Host)
+	fmt.Println("Ip Addr: ", GetAddress())
+	fmt.Println("Port:    ", ":5177")
+	// Listen and Serve on 5177
+	// TODO: Flag for port
+	err := http.ListenAndServe(":5177", nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
 
+/*
+   Functions and Methods for Barnacle
+*/
+
+// GetAddress returns the local ip address.
+func GetAddress() string {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		fmt.Println(err)
+	}
+	addresses, _ := ifaces[2].Addrs()
+	address := addresses[0].String() // Trim the /24?
+	return address
+}
+
+// InitCollection returns a Collection struct
+// with the appropriate directory. This does many things.
+func InitCollection(dir string) *Collection {
+	// Get Albums in Collection
 	c := new(Collection)
+	c.Albums = make([]*Album, 0)
+	// Get User data
 	u, err := user.Current()
 	if err != nil {
 		fmt.Println(err)
@@ -89,13 +138,12 @@ func main() {
 	}
 	c.Host = h
 	c.Owner = u.Username
-	c.Albums = make([]*Album, 0)
-
+	// Get Albums in Collection
+	// TODO: get subdirectories
 	dirs, err := ioutil.ReadDir(dir)
 	if err != nil {
 		fmt.Println(err)
 	}
-	// Get Albums in Collection
 	for _, d := range dirs {
 		if d.IsDir() {
 			album := NewAlbum(d.Name())
@@ -103,6 +151,7 @@ func main() {
 		}
 	}
 	// Get Songs in Albums
+	// Get subdirectories
 	for _, a := range c.Albums {
 		songs, err := ioutil.ReadDir(filepath.Join(dir, a.Title))
 		if err != nil {
@@ -129,8 +178,11 @@ func main() {
 		}
 		a.Count = len(a.Songs)
 	}
+	return c
+}
 
-	// Templates from assets
+// SetUpHtml collects assets and sets Collection templates.
+func (c *Collection) SetUpHtml() {
 	indexHtml, err := Asset("templates/index.html")
 	if err != nil {
 		fmt.Println(err)
@@ -141,26 +193,4 @@ func main() {
 	}
 	c.Index = string(indexHtml)
 	c.Playlist = string(playlistHtml)
-
-	fs := http.FileServer(http.Dir(dir))
-	http.Handle("/media/", http.StripPrefix("/media/", fs))
-	http.HandleFunc("/", c.indexHandler)
-	http.HandleFunc("/listen/", c.listenHandler)
-	fmt.Println("Host:    ", c.Host)
-	fmt.Println("Ip Addr: ", getAddress())
-	fmt.Println("Port:    ", ":5177")
-	err = http.ListenAndServe(":5177", nil)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
-func getAddress() string {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		fmt.Println(err)
-	}
-	addresses, _ := ifaces[2].Addrs()
-	address := addresses[0].String() // Trim the /24?
-	return address
 }
