@@ -74,6 +74,18 @@ func (c *Collection) listenHandler(w http.ResponseWriter,
 	http.NotFound(w, r)
 }
 
+func (c *Collection) refreshHandler(w http.ResponseWriter,
+	r *http.Request) {
+	var dir string
+	if len(os.Args) > 1 {
+		dir = os.Args[1] // absolute path to Music/
+	} else {
+		dir = "Music/" // current directory
+	}
+	c = InitCollection(dir)
+	http.Redirect(w, r, "/", 303)
+}
+
 /*
    Main Thread
 */
@@ -94,6 +106,7 @@ func main() {
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
 	http.HandleFunc("/", c.indexHandler)
 	http.HandleFunc("/listen/", c.listenHandler)
+	http.HandleFunc("/refresh/", c.refreshHandler)
 	// Print Connection Information
 	fmt.Println("Host:    ", c.Host)
 	fmt.Println("Ip Addr: ", GetAddress())
