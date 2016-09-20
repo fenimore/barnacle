@@ -23,7 +23,7 @@
 		    <hr>
 		    <ul class="list-group" id="songlist">
 			{{ range $i, $s := .Songs }}
-			<a href="#" id={{$i}} class="list-group-item"
+			<a href="#" id="{{$i}}" class="list-group-item"
 			   onclick="seek({{ $i }})">{{ $s }}</a>
 			{{ end }}
 		    </ul>		    
@@ -32,7 +32,10 @@
 		    <img style="width:100%" src="{{ .Cover }}" class="img-rounded m-x-auto d-block" alt="cover art">
 		</div>
 	    </div>
-	</container>
+	</div>
+	{{ range .Paths }}
+	{{ . }}
+	{{ end }}
 
 	<script>
 	 // Pass array of songs loaded by Go
@@ -41,7 +44,7 @@
 	 var songlist = document.getElementsByClassName("list-group-item");
 	 var aud = document.getElementById("control");
 	 {{ range .Paths }}
-	 playlist.push({{ . }});
+	 playlist.push("{{ . }}");
 	 console.log("Push");
 	 {{ end }}
 	 console.log("SetActive");

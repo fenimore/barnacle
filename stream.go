@@ -80,6 +80,7 @@ func (c *Collection) indexHandler(w http.ResponseWriter,
 
 func (c *Collection) listenHandler(w http.ResponseWriter,
 	r *http.Request) {
+	fmt.Println(r.URL.Path)
 	album := r.URL.Path[8:]
 	isSubDir, _ := regexp.MatchString("/", album)
 	if !isSubDir {
@@ -96,11 +97,14 @@ func (c *Collection) listenHandler(w http.ResponseWriter,
 		}
 	} else if isSubDir {
 		parts := strings.Split(album, "/")
-		fmt.Println(parts[1])
+		if strings.HasSuffix(r.URL.Path, "/undefined") {
+			return
+		}
 		for _, g := range c.Genres {
 			if g.Title == parts[0] {
 				for _, a := range g.Albums {
 					if a.Title == parts[1] {
+						fmt.Println(a.Songs)
 						t := template.New("playlist")
 						t, err := t.Parse(c.Playlist)
 						if err != nil {
@@ -274,6 +278,9 @@ func (c *Collection) CollectGenres() {
 				g.Albums = append(g.Albums, album)
 			}
 		}
+		for _, a := range g.Albums {
+			a.CollectSongs(filepath.Join(c.Directory, g.Title))
+		}
 	}
 }
 
@@ -295,7 +302,7 @@ func (a *Album) CollectSongs(dir string) {
 				continue
 			}
 			a.Songs = append(a.Songs, s.Name())
-			if a.Genre != "" {
+			if a.Genre == "" {
 				path := filepath.Join("/media", a.Title,
 					s.Name())
 				a.Paths = append(a.Paths, path)
