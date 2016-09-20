@@ -4,6 +4,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -80,7 +81,6 @@ func (c *Collection) indexHandler(w http.ResponseWriter,
 
 func (c *Collection) listenHandler(w http.ResponseWriter,
 	r *http.Request) {
-	fmt.Println(r.URL.Path)
 	album := r.URL.Path[8:]
 	isSubDir, _ := regexp.MatchString("/", album)
 	if !isSubDir {
@@ -104,7 +104,6 @@ func (c *Collection) listenHandler(w http.ResponseWriter,
 			if g.Title == parts[0] {
 				for _, a := range g.Albums {
 					if a.Title == parts[1] {
-						fmt.Println(a.Songs)
 						t := template.New("playlist")
 						t, err := t.Parse(c.Playlist)
 						if err != nil {
@@ -134,13 +133,16 @@ func (c *Collection) refreshHandler(w http.ResponseWriter,
 */
 
 func main() {
-	var dir string // to serve
-	if len(os.Args) > 1 {
-		dir = os.Args[1] // absolute path to Music/
-	} else {
-		dir = "Music/" // current directory
-	}
+	dirFlag := flag.String("dir", "Music/", "the directory of music, ending in Music/")
+	portFlag := flag.String("port", ":5177", "the server port, prefixed by :")
+	noteFlag := flag.String("note", "", "notes to display on index")
+	flag.Parse()
 
+	dir := *dirFlag
+
+	if *noteFlag == "" {
+		fmt.Println("No Notes")
+	}
 	c := InitCollection(dir)
 
 	// Serve Media
@@ -153,10 +155,10 @@ func main() {
 	// Print Connection Information
 	fmt.Println("Host:    ", c.Host)
 	fmt.Println("Ip Addr: ", GetAddress())
-	fmt.Println("Port:    ", ":5177")
+	fmt.Println("Port:    ", *portFlag)
 	// Listen and Serve on 5177
 	// TODO: Flag for port
-	err := http.ListenAndServe(":5177", nil)
+	err := http.ListenAndServe(*portFlag, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -312,7 +314,7 @@ func (a *Album) CollectSongs(dir string) {
 				a.Paths = append(a.Paths, path)
 			}
 		} else if isCover {
-			if a.Genre != "" {
+			if a.Genre == "" {
 				a.Cover = filepath.Join("/media", a.Title,
 					s.Name())
 			} else {

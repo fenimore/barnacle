@@ -16,6 +16,8 @@
 	    <div class="row">
 		<div class="col-sm-6">
 		    <ul class="list-group">
+			<a class="list-group-item disabled" href="#" >
+			    Music</a>
 			{{ range .Albums }}
 			<a class="list-group-item" href=/listen/{{.Title}}>
 			    <span class="tag tag-default tag-pill pull-xs-right">
@@ -33,7 +35,11 @@
 			    {{ .Title }}</a>
 			    {{ range .Albums }}
 			    <a class="list-group-item" href=/listen/{{ $genre }}/{{ .Title }}>
-			        {{ .Title }}</a>
+			        {{ .Title }}
+				<span class="tag tag-default tag-pill pull-xs-right">
+				    {{ .Count }}
+				</span>
+			    </a>
    			    {{ end}}
 			{{ end }}
 		    </ul>
