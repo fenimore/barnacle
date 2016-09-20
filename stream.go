@@ -24,11 +24,12 @@ import (
 // Collection struct houses all the Albums.
 type Collection struct {
 	// TODO: make a map?
-	Albums   []*Album
-	Owner    string
-	Host     string
-	Index    string
-	Playlist string
+	Albums    []*Album
+	Owner     string
+	Host      string
+	Index     string
+	Playlist  string
+	Directory string
 }
 
 // Album struct keeps track of album title, songs
@@ -76,12 +77,8 @@ func (c *Collection) listenHandler(w http.ResponseWriter,
 
 func (c *Collection) refreshHandler(w http.ResponseWriter,
 	r *http.Request) {
-	var dir string
-	if len(os.Args) > 1 {
-		dir = os.Args[1] // absolute path to Music/
-	} else {
-		dir = "Music/" // current directory
-	}
+	// TODO: FIXME
+	dir := "Music/" // current directory
 	c = InitCollection(dir)
 	http.Redirect(w, r, "/", 303)
 }
@@ -97,9 +94,9 @@ func main() {
 	} else {
 		dir = "Music/" // current directory
 	}
+
 	c := InitCollection(dir)
-	// Templates from assets
-	c.SetUpHtml()
+
 	// Serve Media
 	fs := http.FileServer(http.Dir(dir))
 	// Handle Routes
@@ -134,13 +131,26 @@ func GetAddress() string {
 	return address
 }
 
-// InitCollection returns a Collection struct
-// with the appropriate directory. This does many things.
+/*
+   InitCollection methods:
+       InitOwner
+       InitAlbums
+       InitSongs
+       InitHtml
+*/
+
 func InitCollection(dir string) *Collection {
-	// Get Albums in Collection
 	c := new(Collection)
-	c.Albums = make([]*Album, 0)
-	// Get User data
+	c.Directory = dir
+	c.InitOwner()
+	c.InitAlbums()
+	c.InitSongs()
+	c.InitHtml()
+	return c
+}
+
+// InitOwner sets hostname and username.
+func (c *Collection) InitOwner() {
 	u, err := user.Current()
 	if err != nil {
 		fmt.Println(err)
@@ -151,9 +161,13 @@ func InitCollection(dir string) *Collection {
 	}
 	c.Host = h
 	c.Owner = u.Username
-	// Get Albums in Collection
+}
+
+// InitAlbums finds sub directories, sets albums.
+func (c *Collection) InitAlbums() {
 	// TODO: get subdirectories
-	dirs, err := ioutil.ReadDir(dir)
+	c.Albums = make([]*Album, 0)
+	dirs, err := ioutil.ReadDir(c.Directory)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -163,10 +177,14 @@ func InitCollection(dir string) *Collection {
 			c.Albums = append(c.Albums, album)
 		}
 	}
-	// Get Songs in Albums
-	// Get subdirectories
+}
+
+// InitSongs sets Album songs in collection.
+// Song path is /media/AlbumTitle/SongName.
+func (c *Collection) InitSongs() {
+	// TODO: Get subdirectories
 	for _, a := range c.Albums {
-		songs, err := ioutil.ReadDir(filepath.Join(dir, a.Title))
+		songs, err := ioutil.ReadDir(filepath.Join(c.Directory, a.Title))
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -191,11 +209,10 @@ func InitCollection(dir string) *Collection {
 		}
 		a.Count = len(a.Songs)
 	}
-	return c
 }
 
 // SetUpHtml collects assets and sets Collection templates.
-func (c *Collection) SetUpHtml() {
+func (c *Collection) InitHtml() {
 	indexHtml, err := Asset("templates/index.html")
 	if err != nil {
 		fmt.Println(err)
@@ -206,4 +223,18 @@ func (c *Collection) SetUpHtml() {
 	}
 	c.Index = string(indexHtml)
 	c.Playlist = string(playlistHtml)
+}
+
+// GetGenre look for directories without music files.
+// Should this be it's own struct?
+func GetGenre() []string {
+	var genres []string
+	return genres
+}
+
+// GetAlbums looks for directories with music files.
+func GetAlbums() []string {
+	var albums []string
+	return albums
+
 }
