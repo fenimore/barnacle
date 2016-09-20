@@ -12,6 +12,11 @@
     <body>
 	<div class="container" >
 	    <h1 style="margin-top:5%">{{ .Owner }}'s Collection</h1>
+	    {{ if .Notes }}
+	    <div class="alert alert-info" role="alert">
+		<strong>Heads Up!</strong> {{ .Notes }}
+	    </div>
+	    {{ end }}
 	    <hr>
 	    <div class="row">
 		<div class="col-sm-6">

@@ -33,6 +33,7 @@ type Collection struct {
 	Playlist  string
 	Directory string
 	Genres    []*Genre
+	Notes     string
 }
 
 type Genre struct {
@@ -140,11 +141,10 @@ func main() {
 
 	dir := *dirFlag
 
-	if *noteFlag == "" {
-		fmt.Println("No Notes")
-	}
 	c := InitCollection(dir)
-
+	if *noteFlag != "" {
+		c.Notes = *noteFlag
+	}
 	// Serve Media
 	fs := http.FileServer(http.Dir(dir))
 	// Handle Routes
