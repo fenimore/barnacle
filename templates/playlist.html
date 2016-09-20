@@ -16,7 +16,7 @@
 	    <hr>
 	    <div class="row" >
 		<div class="col-md-5">
-		    <audio style="widht:100%" id="control" controls>
+		    <audio style="width:100%" id="control" controls>
 			<source src="" type="audio/mpeg">
 			Your browser does not support the audio element.
 		    </audio>
@@ -43,8 +43,9 @@
 	 var aud = document.getElementById("control");
 	 {{ range .Paths }}
 	 playlist.push({{ . }});
+	 console.log("Push");
 	 {{ end }}
-	 
+	 console.log("SetActive");
 	 function setActive(idx) {
 	     for (var i = 0; i < songlist.length; i++) {
 		 songlist[i].classList.remove('active');

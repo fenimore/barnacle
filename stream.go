@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -80,16 +81,36 @@ func (c *Collection) indexHandler(w http.ResponseWriter,
 func (c *Collection) listenHandler(w http.ResponseWriter,
 	r *http.Request) {
 	album := r.URL.Path[8:]
-
-	for _, a := range c.Albums {
-		if a.Title == album {
-			t := template.New("playlist")
-			t, err := t.Parse(c.Playlist)
-			if err != nil {
-				fmt.Println(err)
+	isSubDir, _ := regexp.MatchString("/", album)
+	if !isSubDir {
+		for _, a := range c.Albums {
+			if a.Title == album {
+				t := template.New("playlist")
+				t, err := t.Parse(c.Playlist)
+				if err != nil {
+					fmt.Println(err)
+				}
+				t.Execute(w, a)
+				return
 			}
-			t.Execute(w, a)
-			return
+		}
+	} else if isSubDir {
+		parts := strings.Split(album, "/")
+		fmt.Println(parts[1])
+		for _, g := range c.Genres {
+			if g.Title == parts[0] {
+				for _, a := range g.Albums {
+					if a.Title == parts[1] {
+						t := template.New("playlist")
+						t, err := t.Parse(c.Playlist)
+						if err != nil {
+							fmt.Println(err)
+						}
+						t.Execute(w, a)
+						return
+					}
+				}
+			}
 		}
 	}
 	http.NotFound(w, r)
@@ -190,7 +211,7 @@ func (c *Collection) InitOwner() {
 		fmt.Println(err)
 	}
 	c.Host = h
-	c.Owner = u.Username
+	c.Owner = strings.Title(u.Username)
 }
 
 // CollectAlbums finds sub directories, sets albums.
@@ -279,12 +300,23 @@ func (a *Album) CollectSongs(dir string) {
 				continue
 			}
 			a.Songs = append(a.Songs, s.Name())
-			path := filepath.Join("/media", a.Title,
-				s.Name())
-			a.Paths = append(a.Paths, path)
+			if a.Genre != "" {
+				path := filepath.Join("/media", a.Title,
+					s.Name())
+				a.Paths = append(a.Paths, path)
+			} else {
+				path := filepath.Join("/media", a.Genre,
+					a.Title, s.Name())
+				a.Paths = append(a.Paths, path)
+			}
 		} else if isCover {
-			a.Cover = filepath.Join("/media/",
-				a.Title, s.Name())
+			if a.Genre != "" {
+				a.Cover = filepath.Join("/media", a.Title,
+					s.Name())
+			} else {
+				a.Cover = filepath.Join("/media", a.Genre,
+					a.Title, s.Name())
+			}
 		}
 	}
 	a.Count = len(a.Songs)

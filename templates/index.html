@@ -12,15 +12,33 @@
     <body>
 	<div class="container" >
 	    <h1 style="margin-top:5%">{{ .Owner }}'s Collection</h1>
-	    <ul class="list-group">
-		{{ range .Albums }}
-		<a class="list-group-item" href=/listen/{{.Title}}>
-		    <span class="tag tag-default tag-pill pull-xs-right">
-			{{ .Count }}
-		    </span>
-		    {{ .Title }}</a>
-		{{ end }}
-	    </ul>
+	    <hr>
+	    <div class="row">
+		<div class="col-sm-6">
+		    <ul class="list-group">
+			{{ range .Albums }}
+			<a class="list-group-item" href=/listen/{{.Title}}>
+			    <span class="tag tag-default tag-pill pull-xs-right">
+				{{ .Count }}
+			    </span>
+			    {{ .Title }}</a>
+			{{ end }}
+		    </ul>
+		</div>
+		<div class="col-sm-6">
+		    <ul class="list-group">
+			{{ range .Genres }}
+			    {{ $genre := .Title }}
+			<a class="list-group-item disabled" href=#>
+			    {{ .Title }}</a>
+			    {{ range .Albums }}
+			<a class="list-group-item" href=/listen/{{ $genre }}/{{ .Title }}>
+			    {{ .Title }}</a>
+   			    {{ end}}
+			{{ end }}
+		    </ul>
+		</div>
+	    </div>
 	    <a href="https://github.com/polypmer/barnacle">Source Code</a>
 	</div>
     </body>
