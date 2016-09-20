@@ -30,6 +30,11 @@ type Collection struct {
 	Index     string
 	Playlist  string
 	Directory string
+	Genres    []*Genre
+}
+
+type Genre struct {
+	Albums []*Album
 }
 
 // Album struct keeps track of album title, songs
@@ -80,6 +85,7 @@ func (c *Collection) refreshHandler(w http.ResponseWriter,
 	// TODO: FIXME
 	dir := "Music/" // current directory
 	c = InitCollection(dir)
+	fmt.Println(dir)
 	http.Redirect(w, r, "/", 303)
 }
 
