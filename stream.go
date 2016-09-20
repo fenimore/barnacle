@@ -118,7 +118,9 @@ func main() {
 
 	c := InitCollection(dir)
 	for _, g := range c.Genres {
-		fmt.Println(g)
+		for _, a := range g.Albums {
+			fmt.Println(a)
+		}
 	}
 
 	// Serve Media
@@ -167,8 +169,12 @@ func InitCollection(dir string) *Collection {
 	c := new(Collection)
 	c.Directory = dir
 	c.InitOwner()
-	c.InitAlbums()
-	c.InitSongs()
+	c.CollectAlbums()
+	c.CollectGenres()
+	//c.InitSongs()
+	for _, a := range c.Albums {
+		a.CollectSongs(c.Directory)
+	}
 	c.InitHtml()
 	return c
 }
@@ -187,8 +193,8 @@ func (c *Collection) InitOwner() {
 	c.Owner = u.Username
 }
 
-// InitAlbums finds sub directories, sets albums.
-func (c *Collection) InitAlbums() {
+// CollectAlbums finds sub directories, sets albums.
+func (c *Collection) CollectAlbums() {
 	// TODO: get subdirectories
 	c.Albums = make([]*Album, 0)
 	c.Genres = make([]*Genre, 0)
@@ -225,7 +231,9 @@ CheckDirs:
 	}
 }
 
-func (c *Collection) InitGenres() {
+// CollectGenres sets Genres in collection.
+// A Genre is a directory without a file.
+func (c *Collection) CollectGenres() {
 	for _, g := range c.Genres {
 		g.Albums = make([]*Album, 0)
 		dirs, err := ioutil.ReadDir(filepath.Join(c.Directory, g.Title))
@@ -253,36 +261,33 @@ func (c *Collection) InitGenres() {
 	}
 }
 
-// InitSongs sets Album songs in collection.
+// CollectSongs sets Album songs.
 // Song path is /media/AlbumTitle/SongName.
-func (c *Collection) InitSongs() {
-	// TODO: Get subdirectories
-	for _, a := range c.Albums {
-		songs, err := ioutil.ReadDir(filepath.Join(c.Directory, a.Title))
-		if err != nil {
-			fmt.Println(err)
-		}
-		for _, s := range songs {
-			isCover := strings.HasSuffix(s.Name(), ".jpg") || strings.HasSuffix(s.Name(), ".png") || strings.HasSuffix(s.Name(), ".jpeg")
-			// The Paths are for the http handlers
-			// Not your filesystem
-			if !s.IsDir() && !isCover {
-				if strings.HasPrefix(s.Name(),
-					".") || strings.HasSuffix(s.Name(),
-					".aiff") {
-					continue
-				}
-				a.Songs = append(a.Songs, s.Name())
-				path := filepath.Join("/media", a.Title,
-					s.Name())
-				a.Paths = append(a.Paths, path)
-			} else if isCover {
-				a.Cover = filepath.Join("/media/",
-					a.Title, s.Name())
-			}
-		}
-		a.Count = len(a.Songs)
+func (a *Album) CollectSongs(dir string) {
+	songs, err := ioutil.ReadDir(filepath.Join(dir, a.Title))
+	if err != nil {
+		fmt.Println(err)
 	}
+	for _, s := range songs {
+		isCover := strings.HasSuffix(s.Name(), ".jpg") || strings.HasSuffix(s.Name(), ".png") || strings.HasSuffix(s.Name(), ".jpeg")
+		// The Paths are for the http handlers
+		// Not your filesystem
+		if !s.IsDir() && !isCover {
+			if strings.HasPrefix(s.Name(),
+				".") || strings.HasSuffix(s.Name(),
+				".aiff") {
+				continue
+			}
+			a.Songs = append(a.Songs, s.Name())
+			path := filepath.Join("/media", a.Title,
+				s.Name())
+			a.Paths = append(a.Paths, path)
+		} else if isCover {
+			a.Cover = filepath.Join("/media/",
+				a.Title, s.Name())
+		}
+	}
+	a.Count = len(a.Songs)
 }
 
 // SetUpHtml collects assets and sets Collection templates.
