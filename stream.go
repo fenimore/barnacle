@@ -42,6 +42,7 @@ type Genre struct {
 // and song paths.
 type Album struct {
 	Title string
+	Genre string
 	Songs []string
 	Paths []string
 	Cover string
@@ -54,8 +55,16 @@ func NewGenre(title string) *Genre {
 }
 
 // NewAlbum returns a new Album with the title.
-func NewAlbum(title string) *Album {
-	return &Album{Title: title}
+func NewAlbum(title, genre string) *Album {
+	return &Album{Title: title, Genre: genre}
+}
+
+func (a *Album) String() string {
+	return a.Title
+}
+
+func (g *Genre) String() string {
+	return g.Title
 }
 
 func (c *Collection) indexHandler(w http.ResponseWriter,
@@ -108,6 +117,9 @@ func main() {
 	}
 
 	c := InitCollection(dir)
+	for _, g := range c.Genres {
+		fmt.Println(g)
+	}
 
 	// Serve Media
 	fs := http.FileServer(http.Dir(dir))
@@ -184,10 +196,11 @@ func (c *Collection) InitAlbums() {
 	if err != nil {
 		fmt.Println(err)
 	}
+CheckDirs:
 	for _, d := range dirs {
 		if d.IsDir() {
 			isGenre := true
-			album := NewAlbum(d.Name())
+			album := NewAlbum(d.Name(), "")
 			a, err := ioutil.ReadDir(filepath.Join(c.Directory, d.Name()))
 			if err != nil {
 				fmt.Println(err)
@@ -198,6 +211,9 @@ func (c *Collection) InitAlbums() {
 					isGenre = false
 					break CheckForGenre
 				}
+			}
+			if len(a) < 1 {
+				continue CheckDirs
 			}
 			if isGenre {
 				g := NewGenre(d.Name())
@@ -211,7 +227,29 @@ func (c *Collection) InitAlbums() {
 
 func (c *Collection) InitGenres() {
 	for _, g := range c.Genres {
-		dirs, err := ioutil.ReadDir(filepath.Join(c.Directory, )
+		g.Albums = make([]*Album, 0)
+		dirs, err := ioutil.ReadDir(filepath.Join(c.Directory, g.Title))
+		if err != nil {
+			fmt.Println(err)
+		}
+		for _, d := range dirs {
+			isAlbum := false
+			album := NewAlbum(d.Name(), g.Title)
+			a, err := ioutil.ReadDir(filepath.Join(c.Directory, g.Title, d.Name()))
+			if err != nil {
+				fmt.Println(err)
+			}
+		CheckIfAlbum:
+			for _, s := range a {
+				if !s.IsDir() {
+					isAlbum = true
+					break CheckIfAlbum
+				}
+			}
+			if isAlbum {
+				g.Albums = append(g.Albums, album)
+			}
+		}
 	}
 }
 
