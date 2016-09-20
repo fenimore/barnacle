@@ -138,11 +138,6 @@ func main() {
 	}
 
 	c := InitCollection(dir)
-	for _, g := range c.Genres {
-		for _, a := range g.Albums {
-			fmt.Println(a)
-		}
-	}
 
 	// Serve Media
 	fs := http.FileServer(http.Dir(dir))

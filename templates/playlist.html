@@ -29,14 +29,13 @@
 		    </ul>		    
 		</div>
 		<div class="col-md-5">
-		    <img style="width:100%" src={{ .Cover }} class="img-rounded m-x-auto d-block" alt="cover art">		    
+		    <img style="width:100%" src="{{ .Cover }}" class="img-rounded m-x-auto d-block" alt="cover art">
 		</div>
 	    </div>
 	</container>
 
 	<script>
 	 // Pass array of songs loaded by Go
-	 //var playlist = ["media/sample1.mp3", "media/sample2.mp3"]
 	 var playlist = [];
 	 var position = 0;
 	 var songlist = document.getElementsByClassName("list-group-item");
