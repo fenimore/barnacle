@@ -34,6 +34,7 @@ type Collection struct {
 }
 
 type Genre struct {
+	Title  string
 	Albums []*Album
 }
 
@@ -47,7 +48,12 @@ type Album struct {
 	Count int
 }
 
-// NewAlbum returns a new album with the title.
+// NewGenre returns a new Genre with title.
+func NewGenre(title string) *Genre {
+	return &Genre{Title: title}
+}
+
+// NewAlbum returns a new Album with the title.
 func NewAlbum(title string) *Album {
 	return &Album{Title: title}
 }
@@ -173,15 +179,39 @@ func (c *Collection) InitOwner() {
 func (c *Collection) InitAlbums() {
 	// TODO: get subdirectories
 	c.Albums = make([]*Album, 0)
+	c.Genres = make([]*Genre, 0)
 	dirs, err := ioutil.ReadDir(c.Directory)
 	if err != nil {
 		fmt.Println(err)
 	}
 	for _, d := range dirs {
 		if d.IsDir() {
+			isGenre := true
 			album := NewAlbum(d.Name())
-			c.Albums = append(c.Albums, album)
+			a, err := ioutil.ReadDir(filepath.Join(c.Directory, d.Name()))
+			if err != nil {
+				fmt.Println(err)
+			}
+		CheckForGenre:
+			for _, s := range a {
+				if !s.IsDir() {
+					isGenre = false
+					break CheckForGenre
+				}
+			}
+			if isGenre {
+				g := NewGenre(d.Name())
+				c.Genres = append(c.Genres, g)
+			} else {
+				c.Albums = append(c.Albums, album)
+			}
 		}
+	}
+}
+
+func (c *Collection) InitGenres() {
+	for _, g := range c.Genres {
+		dirs, err := ioutil.ReadDir(filepath.Join(c.Directory, )
 	}
 }
 
