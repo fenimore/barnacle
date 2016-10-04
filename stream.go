@@ -17,6 +17,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 //go:generate go-bindata -o assets.go templates/
@@ -24,6 +26,8 @@ import (
 /*
    Structs and Constructors
 */
+
+var c *Collection
 
 // Collection struct houses all the Albums.
 type Collection struct {
@@ -72,65 +76,6 @@ func (g *Genre) String() string {
 	return g.Title
 }
 
-func (c *Collection) indexHandler(w http.ResponseWriter,
-	r *http.Request) {
-	t := template.New("index")
-	t, err := t.Parse(c.Index)
-	if err != nil {
-		fmt.Println(err)
-	}
-	t.Execute(w, c)
-}
-
-func (c *Collection) listenHandler(w http.ResponseWriter,
-	r *http.Request) {
-	album := r.URL.Path[8:]
-	isSubDir, _ := regexp.MatchString("/", album)
-	if !isSubDir {
-		for _, a := range c.Albums {
-			if a.Title == album {
-				t := template.New("playlist")
-				t, err := t.Parse(c.Playlist)
-				if err != nil {
-					fmt.Println(err)
-				}
-				t.Execute(w, a)
-				return
-			}
-		}
-	} else if isSubDir {
-		parts := strings.Split(album, "/")
-		if strings.HasSuffix(r.URL.Path, "/undefined") {
-			return
-		}
-		for _, g := range c.Genres {
-			if g.Title == parts[0] {
-				for _, a := range g.Albums {
-					if a.Title == parts[1] {
-						t := template.New("playlist")
-						t, err := t.Parse(c.Playlist)
-						if err != nil {
-							fmt.Println(err)
-						}
-						t.Execute(w, a)
-						return
-					}
-				}
-			}
-		}
-	}
-	http.NotFound(w, r)
-}
-
-func (c *Collection) refreshHandler(w http.ResponseWriter,
-	r *http.Request) {
-	// TODO: FIXME
-	dir := "Music/" // current directory
-	c = InitCollection(dir)
-	fmt.Println(dir)
-	http.Redirect(w, r, "/", 303)
-}
-
 /*
    Main Thread
 */
@@ -143,7 +88,7 @@ func main() {
 
 	dir := *dirFlag
 
-	c := InitCollection(dir)
+	c = InitCollection(dir)
 	if *noteFlag != "" {
 		c.Notes = *noteFlag
 	}
@@ -151,8 +96,9 @@ func main() {
 	fs := http.FileServer(http.Dir(dir))
 	// Handle Routes
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
-	http.HandleFunc("/", Logger(c.indexHandler, "Index"))
-	http.HandleFunc("/listen/", Logger(c.listenHandler, "Listen"))
+
+	//http.HandleFunc("/", c.indexHandler)
+	//http.HandleFunc("/listen/", c.listenHandler)
 	//http.HandleFunc("/refresh/", c.refreshHandler)
 	// Print Connection Information
 	fmt.Println("Host:    ", c.Host)
@@ -160,7 +106,21 @@ func main() {
 	fmt.Println("Port:    ", *portFlag)
 	// Listen and Serve on 5177
 	// TODO: Flag for port
-	err := http.ListenAndServe(*portFlag, nil)
+	router := mux.NewRouter().StrictSlash(true)
+	for _, route := range routes {
+		var handler http.Handler
+
+		handler = route.HandlerFunc
+		handler = Logger(handler, route.Name)
+
+		router.
+			Methods(route.Method).
+			Path(route.Pattern).
+			Name(route.Name).
+			Handler(handler)
+	}
+
+	err := http.ListenAndServe(*portFlag, router)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -369,4 +329,95 @@ func Logger(inner http.Handler, name string) http.Handler {
 			time.Since(start),
 		)
 	})
+}
+
+/*
+Routes and Router
+*/
+type Route struct {
+	Name        string
+	Method      string
+	Pattern     string
+	HandlerFunc http.HandlerFunc
+}
+type Routes []Route
+
+var routes = Routes{
+	Route{
+		"Index",
+		"GET",
+		"/",
+		indexHandler,
+	},
+	Route{
+		"Listen",
+		"GET",
+		"/listen/{album}",
+		listenHandler,
+	},
+}
+
+/*
+Handlers
+*/
+
+func indexHandler(w http.ResponseWriter,
+	r *http.Request) {
+	t := template.New("index")
+	t, err := t.Parse(c.Index)
+	if err != nil {
+		fmt.Println(err)
+	}
+	t.Execute(w, c)
+}
+
+func listenHandler(w http.ResponseWriter,
+	r *http.Request) {
+	// album := r.URL.Path[8:]
+	vars := mux.Vars(r)
+	album := vars["album"]
+	isSubDir, _ := regexp.MatchString("/", album)
+	if !isSubDir {
+		for _, a := range c.Albums {
+			if a.Title == album {
+				t := template.New("playlist")
+				t, err := t.Parse(c.Playlist)
+				if err != nil {
+					fmt.Println(err)
+				}
+				t.Execute(w, a)
+				return
+			}
+		}
+	} else if isSubDir {
+		parts := strings.Split(album, "/")
+		if strings.HasSuffix(r.URL.Path, "/undefined") {
+			return
+		}
+		for _, g := range c.Genres {
+			if g.Title == parts[0] {
+				for _, a := range g.Albums {
+					if a.Title == parts[1] {
+						t := template.New("playlist")
+						t, err := t.Parse(c.Playlist)
+						if err != nil {
+							fmt.Println(err)
+						}
+						t.Execute(w, a)
+						return
+					}
+				}
+			}
+		}
+	}
+	http.NotFound(w, r)
+}
+
+func (c *Collection) refreshHandler(w http.ResponseWriter,
+	r *http.Request) {
+	// TODO: FIXME
+	dir := "Music/" // current directory
+	c = InitCollection(dir)
+	fmt.Println(dir)
+	http.Redirect(w, r, "/", 303)
 }
