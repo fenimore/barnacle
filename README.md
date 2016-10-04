@@ -30,7 +30,7 @@ Run the stream executable in the parent directory to a `Music/` directory, or de
 
 For example:
 
-	./barnacle -dir
+	./barnacle -dir=/home/user/Music -note="check out Sing A Song of Basie" -port=:80
 
 ## Development
 I'm using go-bindata to pack the assets (templates) into the binary. Use `go generate` to call `go-bindata -o assets.go templates/` and refresh the html front end. Then `go run` `stream.go` AND `assets.go`.

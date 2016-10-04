@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 //go:generate go-bindata -o assets.go templates/
@@ -149,9 +151,9 @@ func main() {
 	fs := http.FileServer(http.Dir(dir))
 	// Handle Routes
 	http.Handle("/media/", http.StripPrefix("/media/", fs))
-	http.HandleFunc("/", c.indexHandler)
-	http.HandleFunc("/listen/", c.listenHandler)
-	http.HandleFunc("/refresh/", c.refreshHandler)
+	http.HandleFunc("/", Logger(c.indexHandler, "Index"))
+	http.HandleFunc("/listen/", Logger(c.listenHandler, "Listen"))
+	//http.HandleFunc("/refresh/", c.refreshHandler)
 	// Print Connection Information
 	fmt.Println("Host:    ", c.Host)
 	fmt.Println("Ip Addr: ", GetAddress())
@@ -352,4 +354,19 @@ func GetAlbums() []string {
 	var albums []string
 	return albums
 
+}
+
+func Logger(inner http.Handler, name string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		inner.ServeHTTP(w, r)
+
+		log.Printf(
+			"%s\t%s\t%s\t%s",
+			r.Method,
+			r.RequestURI,
+			name,
+			time.Since(start),
+		)
+	})
 }
