@@ -1,3 +1,9 @@
+SOOOO, I tried adding logging with some fancy gorilla mux addition. But everything then broke. Everything after this commit: 
+https://github.com/polypmer/barnacle/commit/c78a4c6731b1aac7a0eededb25b218411458c624
+
+is broken.
+
+
 # barnacle
 
 Stream albums on a local network.
