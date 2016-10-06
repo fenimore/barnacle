@@ -37,3 +37,8 @@ I'm using go-bindata to pack the assets (templates) into the binary. Use `go gen
 
 
 ![screenshot](http://polypmer.github.io/img/barnacle.png "Screeshot")
+
+
+TODO:
+Rewrite history without binary
+Release binary on github releases
