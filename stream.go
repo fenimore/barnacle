@@ -137,6 +137,7 @@ func main() {
 	dirFlag := flag.String("dir", "Music/", "the directory of music, ending in Music/")
 	portFlag := flag.String("port", ":5177", "the server port, prefixed by :")
 	noteFlag := flag.String("note", "", "notes to display on index")
+	addrFlag := flag.Bool("addr", true, "display the address (on certain machines, if true this will crash the program ")
 	flag.Parse()
 
 	dir := *dirFlag
@@ -154,7 +155,9 @@ func main() {
 	http.HandleFunc("/refresh/", c.refreshHandler)
 	// Print Connection Information
 	fmt.Println("Host:    ", c.Host)
-	fmt.Println("Ip Addr: ", GetAddress())
+	if *addrFlag {
+		fmt.Println("Ip Addr: ", GetAddress())
+	}
 	fmt.Println("Port:    ", *portFlag)
 	// Listen and Serve on 5177
 	// TODO: Flag for port
